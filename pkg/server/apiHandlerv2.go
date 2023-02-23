@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/KarimElghamry/alvarium-sdk-go/pkg/interfaces"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
 	"github.com/lf-edge/adam/pkg/driver"
@@ -47,6 +48,7 @@ type apiHandlerv2 struct {
 	signingKeyPath  string
 	encryptCertPath string
 	encryptKeyPath  string
+	alvariumSdk     interfaces.Sdk
 }
 
 const (
@@ -83,8 +85,8 @@ func (h *apiHandlerv2) recordClient(u *uuid.UUID, r *http.Request) {
 	h.manager.WriteRequest(*u, b)
 }
 
-//validateAuthContainerAndRecord processes http.Request extracts AuthContainer and do its validation
-//against registered devices:
+// validateAuthContainerAndRecord processes http.Request extracts AuthContainer and do its validation
+// against registered devices:
 // checks for certs hash in AuthContainer and go through saved certs to check auth state
 // it verifies Signature of AuthContainer payload against saved cert
 // returns ProtectedPayload and device uuid
@@ -130,7 +132,7 @@ func (h *apiHandlerv2) validateAuthContainerAndRecord(w http.ResponseWriter, r *
 	return payload, u
 }
 
-//getAllCerts process certificates files and return structure with them
+// getAllCerts process certificates files and return structure with them
 func (h *apiHandlerv2) getAllCerts() (map[string]*certs.ZCert, error) {
 	allCerts := make(map[string]*certs.ZCert)
 	signingCerts, sgErr := getCertChain(h.signingCertPath, certs.ZCertType_CERT_TYPE_CONTROLLER_SIGNING)
@@ -502,7 +504,7 @@ func (h *apiHandlerv2) attest(w http.ResponseWriter, r *http.Request) {
 	if u == nil {
 		return
 	}
-	out, status, err := attestProcess(h.manager, *u, b)
+	out, status, err := attestProcess(h.manager, *u, b, h.alvariumSdk)
 	if err != nil {
 		log.Printf("Failed to attestProcess: %v", err)
 		http.Error(w, http.StatusText(status), status)

@@ -3,6 +3,7 @@ module github.com/lf-edge/adam
 go 1.16
 
 require (
+	github.com/KarimElghamry/alvarium-sdk-go v0.0.0-20230228092252-eb3dfe2d234c
 	github.com/aohorodnyk/mimeheader v0.0.6
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-redis/redis v6.15.7+incompatible
@@ -18,6 +19,7 @@ require (
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.10.0 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
+	github.com/project-alvarium/provider-logging v0.0.0-20210720200405-d8d2146a4f14
 	github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
@@ -34,5 +36,4 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

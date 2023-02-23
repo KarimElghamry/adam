@@ -1,0 +1,37 @@
+{
+  "sdk" : {
+    "annotators": ["remote-tpm"],
+    "hash": {
+      "type": "sha256"
+    },
+    "signature": {
+      "public": {
+        "type": "ed25519",
+        "path": "./res/keys/ed25519/public.key"
+      },
+      "private": {
+        "type": "ed25519",
+        "path": "./res/keys/ed25519/private.key"
+      }
+    },
+    "stream": {
+      "type": "mqtt",
+      "config": {
+        "clientId": "alvarium-test",
+        "qos": 0,
+        "user": "",
+        "password": "",
+        "provider": {
+          "host": "test.mosquitto.org",
+          "protocol": "tcp",
+          "port": 1883
+        },
+        "cleanness": false,
+        "topics": ["alvarium-test-topic"]
+      }
+    }
+  },
+  "logging": {
+    "minLogLevel": "debug"
+  }
+}

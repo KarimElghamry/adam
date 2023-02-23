@@ -1,13 +1,9 @@
-FROM lfedge/eve-alpine:6.2.0 as build
-ENV PKGS alpine-baselayout
-RUN eve-alpine-deploy.sh
+FROM ubuntu:latest
+RUN apt-get update \
+  && apt-get install -y wget
+RUN wget --directory-prefix=/usr/lib https://github.com/project-alvarium/alvarium-sdk-go/raw/main/internal/iota/include/libiota_streams_c.so
 
-WORKDIR /out
-COPY scripts /bin
-COPY samples /adam
-COPY ./bin/adam-linux-amd64 /bin/adam
-
-FROM scratch
-COPY --from=build /out/ /
 WORKDIR /adam
-ENTRYPOINT ["/bin/adam"]
+COPY ./bin/ .
+
+ENTRYPOINT ["./adam"]

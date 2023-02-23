@@ -48,7 +48,7 @@ BIN := adam
 LOCALBIN := $(BINDIR)/$(BIN)-$(OS)-$(ARCH)
 LOCALLINK := $(BINDIR)/$(BIN)
 
-GOENV ?= GOOS=$(OS) GOARCH=$(ARCH) GO111MODULE=on CGO_ENABLED=0
+GOENV ?= GOOS=$(OS) GOARCH=$(ARCH) GO111MODULE=on CGO_ENABLED=1
 GO ?= $(GOENV)
 ifneq ($(BUILD),local)
 GO = docker run --rm -v $(PWD):/app -w /app golang:$(GOVER) env $(GOENV)
@@ -58,10 +58,16 @@ GO_FILES := $(shell find . -type f -name '*.go')
 
 all: build
 
+run: build
+	cd bin && ./adam server --auto-cert
+
 $(BINDIR):
 	mkdir -p $@
 
 build: bin $(LOCALBIN) $(LOCALLINK)
+	cp -r ./cmd/res ./bin
+	test -f /usr/lib/libiota_streams_c.so || sudo wget --directory-prefix=/usr/lib https://github.com/project-alvarium/alvarium-sdk-go/raw/main/internal/iota/include/libiota_streams_c.so
+
 $(LOCALBIN):
 	$(GO) go build -o $@ main.go
 
@@ -116,4 +122,5 @@ endif
 
 clean:
 	rm -rf run/*
+	rm -rf bin/*
 

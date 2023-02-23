@@ -115,6 +115,12 @@ func (s *Server) Start() {
 	ed.HandleFunc("/uuid", api.uuid).Methods("POST")
 
 	if hasApiV2 {
+		sdk, err := getAlvariumSdk()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
 		apiv2 := &apiHandlerv2{
 			manager:         s.DeviceManager,
 			logChannel:      logChannel,
@@ -124,6 +130,7 @@ func (s *Server) Start() {
 			signingKeyPath:  s.SigningKeyPath,
 			encryptCertPath: s.EncryptCertPath,
 			encryptKeyPath:  s.EncryptKeyPath,
+			alvariumSdk:     sdk,
 		}
 
 		edv2 := router.PathPrefix("/api/v2/edgedevice").Subrouter()

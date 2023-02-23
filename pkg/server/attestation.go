@@ -5,6 +5,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -13,6 +14,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/KarimElghamry/alvarium-sdk-go/pkg/contracts"
+	"github.com/KarimElghamry/alvarium-sdk-go/pkg/interfaces"
 	"github.com/golang/protobuf/proto"
 	"github.com/google/go-tpm/tpm2"
 	"github.com/lf-edge/adam/pkg/driver"
@@ -23,7 +26,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-//extractQuoteAttestTemplate process attestation quote and return internal structure with provided data
+// extractQuoteAttestTemplate process attestation quote and return internal structure with provided data
 func extractQuoteAttestTemplate(quote *attest.ZAttestQuote) *common.PCRTemplate {
 	template := common.PCRTemplate{}
 	for _, el := range quote.GetPcrValues() {
@@ -43,8 +46,8 @@ func extractQuoteAttestTemplate(quote *attest.ZAttestQuote) *common.PCRTemplate 
 	return &template
 }
 
-//quoteValidate validates nonce, algo and hash of provided quote
-//it modifies resp.Response field in case of errors
+// quoteValidate validates nonce, algo and hash of provided quote
+// it modifies resp.Response field in case of errors
 func quoteValidate(manager driver.DeviceManager, u uuid.UUID, quote *attest.ZAttestQuote, resp *attest.ZAttestQuoteResp) error {
 	deviceOptions, err := getDeviceOptions(manager, u)
 	if err != nil {
@@ -143,7 +146,7 @@ func quoteValidate(manager driver.DeviceManager, u uuid.UUID, quote *attest.ZAtt
 	return nil
 }
 
-//templateAttest checks provided quote against saved template
+// templateAttest checks provided quote against saved template
 func templateAttest(manager driver.DeviceManager, u uuid.UUID, quote *attest.ZAttestQuote, resp *attest.ZAttestQuoteResp) error {
 	deviceOptions, err := getDeviceOptions(manager, u)
 	if err != nil {
@@ -217,7 +220,7 @@ func templateAttest(manager driver.DeviceManager, u uuid.UUID, quote *attest.ZAt
 	return nil
 }
 
-func attestProcess(manager driver.DeviceManager, u uuid.UUID, b []byte) ([]byte, int, error) {
+func attestProcess(manager driver.DeviceManager, u uuid.UUID, b []byte, sdk interfaces.Sdk) ([]byte, int, error) {
 	msg := &attest.ZAttestReq{}
 	if err := proto.Unmarshal(b, msg); err != nil {
 		return nil, http.StatusBadRequest, fmt.Errorf("failed to parse attest request: %v", err)
@@ -274,6 +277,16 @@ func attestProcess(manager driver.DeviceManager, u uuid.UUID, b []byte) ([]byte,
 			IntegrityToken: []byte(integrityToken),
 			Keys:           keys,
 			Response:       attest.ZAttestResponseCode_Z_ATTEST_RESPONSE_CODE_SUCCESS,
+		}
+
+		// alvarium annotation
+		if !deviceOptions.Attested {
+			ctx := context.WithValue(context.Background(), contracts.DeviceIdKey, u.String())
+			if msg.Quote == nil {
+				sdk.Create(ctx, nil)
+			} else {
+				sdk.Create(ctx, msg.Quote.GetAttestData())
+			}
 		}
 
 		// no data provided, assume that TPM disabled
